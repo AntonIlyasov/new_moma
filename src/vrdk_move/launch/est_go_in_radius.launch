@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="velocity"            default="0.056"/>
+    <arg name="radius_tube"         default="1.5"/>
+    
+    <node pkg="vrdk_move" type="est_go_in_radius" name="est_go_in_radius" output="screen">
+    	<param name="Velocity"          value="$(arg velocity)"/>
+    	<param name="Radius_tube"       value="$(arg radius_tube)"/>
+    </node>
+
+  </launch> 

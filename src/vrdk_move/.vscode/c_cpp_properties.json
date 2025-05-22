@@ -1,0 +1,31 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/noetic/include/**",
+        "/home/anton20241/pipe_inspect_ws/devel/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/aruco_ros/aruco/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/aruco_ros/aruco_ros/include/**",
+        "/home/anton20241/rtc_work/fingers_rx_tx_ws/src/fingers/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/go_to_goal_tut/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/marker_move/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/show_pose/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/turtlebot3_simulations/turtlebot3_fake/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/turtlebot3_simulations/turtlebot3_gazebo/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/turtlebot3/turtlebot3_slam/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/vrdk_move/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

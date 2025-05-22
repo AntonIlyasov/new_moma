@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<launch>
+    <arg name="velocity"                   default="0.056"/>
+    
+    <node pkg="vrdk_move" type="est_go_in_line"   name="est_go_in_line" output="screen">
+    	<param name="Velocity"                     value="$(arg velocity)"/>
+    </node>
+
+  </launch> 

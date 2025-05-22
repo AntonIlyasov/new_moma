@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/anton20241/pipe_inspect_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/aruco_ros/aruco/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/aruco_ros/aruco_ros/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/bag_tut/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/go_to_goal/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/go_to_goal_tut/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/show_pose/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/test/include/**",
+        "/home/anton20241/pipe_inspect_ws/src/track_make/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

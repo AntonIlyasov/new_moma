@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="track_world">
+    <physics name="default_physics" default="true" type="ode">
+      <gravity>0 0 -9.8</gravity>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://aruco_visual_marker_26</uri>
+      <pose>0.4 1.96 0.25 0 0 -0.413</pose>  <!-- для радиуса 5м и от 1м до 3м  -->
+      <name>aruco_marker</name>
+    </include>
+
+    <include>
+      <uri>model://my_camera</uri>
+      <pose>0 0 0.25  0 0 0</pose>
+    </include>
+
+  </world>
+</sdf>
