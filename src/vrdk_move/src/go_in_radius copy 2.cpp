@@ -39,13 +39,9 @@ bool getOdomPoses             = false;                            // получ�
 
 
 geometry_msgs::Pose desired_pose;    // желаемая поза для второго робота относительно первого
-geometry_msgs::Pose new_desired_pose_gl; // новая желаемая поза для второго робота относительно ГСК 
+
 
 void findAr2CamOffset(geometry_msgs::Vector3 &ar2CamOffset);
-double getYawFromPose(const geometry_msgs::Pose& pose);
-
-double des_alpha = 0.0;
-double des_dist = 0.0;
 
 void setStopVdrk(){
   velVdrkMsg.linear.x  = 0.0;
@@ -57,8 +53,6 @@ void setStopVdrk(){
 }
 
 void marker_go(){
-  if (!camera_is_stay) return;
-
   setStopVdrk();  // обнуляем все скорости
   if ((ROBOTS_DIST_PRECISION < (MAX_ROBOTS_DIST - lenOfAr2CamOffset)) && camera_is_stay) {
     velVdrkMsg.linear.y  = vel4VdrkFromUser;
@@ -69,9 +63,6 @@ void marker_go(){
     velCmdArPub.publish(velVdrkMsg);
     marker_is_stay       = false;
   } else {
-    ROS_INFO("in marker_go MY NEW POSES x, y, yaw: [%f, %f, %f]", crntArOdomPose.position.x,
-                                                                  crntArOdomPose.position.y,
-                                                                  getYawFromPose(crntArOdomPose));  
     velCmdArPub.publish(velVdrkMsg);
     marker_is_stay       = true;
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
@@ -137,43 +128,22 @@ void camera_go(){
   tf::StampedTransform transform;
   tryToGetAr2CamTransform(listener, transform);
 
-  double yaw_c = getYawFromPose(crntCamOdomPose); // находим текущий угол камеры отн ГСК
-  double yaw_c_degrees = yaw_c * (180.0 / M_PI);  // то же в градусах
+  double current_yaw_cam = getYawFromPose(crntCamOdomPose); // находим текущий угол камеры
+  double yaw_degrees = current_yaw_cam * (180.0 / M_PI);
+  ROS_INFO("in camera_go current_yaw_cam: %f rad (%f deg)", current_yaw_cam, yaw_degrees);
 
-  double gamma = des_alpha - yaw_c;
-  double dx_des_gl = des_dist * cos(gamma);
-  double dy_des_gl = des_dist * sin(gamma);
+  double dx = transform.getOrigin().x();                  // фактическое положение маркера относительно камеры
+  double dy = transform.getOrigin().y();                  // фактическое положение маркера относительно камеры
+  double cur_yaw = atan2(dy, dx) + current_yaw_cam;       // фактический угол между камерой и маркером в СК камеры
 
-  double dx_gl = transform.getOrigin().x();                  // фактическое положение маркера относительно камеры в ГСК
-  double dy_gl = transform.getOrigin().y();                  // фактическое положение маркера относительно камеры в ГСК
+  double error_dx = dx - desired_pose.position.x;         // ошибка по дельта х
+  double error_dy = dy - desired_pose.position.y;         // ошибка по дельта y
+  double error_yaw = cur_yaw - getYawFromPose(desired_pose); // ошибка по углу
 
-  double error_dx = dx_gl - dx_des_gl;         // ошибка по дельта х
-  double error_dy = dy_gl - dy_des_gl;         // ошибка по дельта y
-
-  new_desired_pose_gl.position.x = crntCamOdomPose.position.x + error_dx;
-  new_desired_pose_gl.position.y = crntCamOdomPose.position.y + error_dy;
-
-
-  ROS_INFO("in camera_go yaw_c: %f rad (%f deg)", yaw_c, yaw_c_degrees); 
-  ROS_INFO("in camera_go des_alpha: [%f]", des_alpha); 
-  ROS_INFO("in camera_go gamma: [%f]", gamma);
-  ROS_INFO("in camera_go des_dist: [%f]", des_dist);
-  ROS_INFO("in camera_go dx_des_gl: [%f]", dx_des_gl);
-  ROS_INFO("in camera_go dy_des_gl: [%f]", dy_des_gl);
-  ROS_INFO("in camera_go dx_gl: [%f]", dx_gl);
-  ROS_INFO("in camera_go dy_gl: [%f]", dy_gl);
-  ROS_INFO("in camera_go error_dx, error_dy,: [%f, %f]", error_dx, error_dy);
-  ROS_INFO("in camera_go new des x, y: [%f, %f]", new_desired_pose_gl.position.x, new_desired_pose_gl.position.y);  
-  
-  
-  
-  // ROS_INFO("in camera_go current_yaw_cam: %f rad (%f deg)", current_yaw_cam, yaw_degrees);  
-  // double cur_yaw = atan2(dy, dx) + current_yaw_cam;       // фактический угол между камерой и маркером в СК камеры
-  // double error_yaw = cur_yaw - getYawFromPose(desired_pose); // ошибка по углу
-  // ROS_INFO("in camera_go atan2(dy, dx): [%f]", atan2(dy, dx));   // 78.03 градусов
-  // ROS_INFO("in camera_go dx, dy, cur_yaw: [%f, %f, %f]", dx, dy, cur_yaw);
-  // ROS_INFO("in camera_go getYawFromPose(desired_pose): [%f]", getYawFromPose(desired_pose));
-  // ROS_INFO("in camera_go error_dx, error_dy,: [%f, %f]", error_dx, error_dy);
+  ROS_INFO("in camera_go atan2(dy, dx): [%f]", atan2(dy, dx));   // 78.03 градусов
+  ROS_INFO("in camera_go dx, dy, cur_yaw: [%f, %f, %f]", dx, dy, cur_yaw);
+  ROS_INFO("in camera_go getYawFromPose(desired_pose): [%f]", getYawFromPose(desired_pose));
+  ROS_INFO("in camera_go error_dx, error_dy, error_yaw: [%f, %f, %f]", error_dx, error_dy, error_yaw);
 
   if (abs(error_dx) > ROBOTS_DIST_PRECISION){
     velVdrkMsg.linear.x =  error_dx;
@@ -183,16 +153,16 @@ void camera_go(){
     velVdrkMsg.linear.y =  error_dy;
   }
 
-  // if (abs(error_yaw) > 0.001){
-  //   // error_yaw = normalizeAngle(error_yaw);
-  //   velVdrkMsg.angular.z = (-1.0) * error_yaw;
-  // }
+  if (abs(error_yaw) > 0.001){
+    // error_yaw = normalizeAngle(error_yaw);
+    velVdrkMsg.angular.z = (-1.0) * error_yaw;
+  }
 
   ROS_INFO("camera_go velVdrkMsg.angular.z: [%f]", velVdrkMsg.angular.z);
   velCmdCamPub.publish(velVdrkMsg);
   camera_is_stay = false;
 
-  if (abs(error_dx) <= ROBOTS_DIST_PRECISION && abs(error_dy) <= ROBOTS_DIST_PRECISION ){ //&& abs(error_yaw) < 0.001
+  if (abs(error_dx) <= ROBOTS_DIST_PRECISION && abs(error_dy) <= ROBOTS_DIST_PRECISION && abs(error_yaw) < 0.001){
     setStopVdrk();
     velCmdCamPub.publish(velVdrkMsg);
     camera_is_stay       = true;
@@ -268,21 +238,6 @@ void setup(ros::NodeHandle& node) {
   desired_pose.orientation.y = 0.0;
   desired_pose.orientation.z = sin(atan2(dy, dx) / 2.0);  // Ось Z
   desired_pose.orientation.w = cos(atan2(dy, dx) / 2.0);  // Угол поворота        // 78 градусов
-
-  double yaw_m = getYawFromPose(crntArOdomPose);  // находим текущий угол маркера отн ГСК
-  double yaw_m_degrees = yaw_m * (180.0 / M_PI);  // то же в градусах
-
-  ROS_INFO("in setup yaw_m: %f rad (%f deg)", yaw_m, yaw_m_degrees);
-
-  if (yaw_m < 0) des_alpha = yaw_m + M_PI_2 - atan2(dy, dx);
-  else des_alpha = yaw_m - M_PI_2 + atan2(dy, dx);
-
-  double des_alpha_degrees = des_alpha * (180.0 / M_PI);  // то же в градусах
-
-  ROS_INFO("in setup des_alpha: %f rad (%f deg)", des_alpha, des_alpha_degrees);
-
-  des_dist = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
-  ROS_INFO("in setup des_dist: [%f]", des_dist);
 
 }
 
